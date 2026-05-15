@@ -1,5 +1,5 @@
 ---
-name: push
+name: push-commit
 description: Safely commit and push current work to remote
 ---
 
