@@ -8,13 +8,32 @@
 </head>
 <body>
   <div class="container">
-    <h1>Todo List</h1>
-    <form id="todo-form">
-      <input type="text" id="todo-input" placeholder="What needs to be done?" autocomplete="off">
-      <button type="submit">Add</button>
-    </form>
-    <ul id="todo-list"></ul>
-    <div id="empty-state" class="empty-state">No todos yet. Add one above!</div>
+    <div id="login-section">
+      <h1>Login</h1>
+      <form id="login-form">
+        <input type="text" id="username-input" placeholder="Username" autocomplete="off">
+        <input type="password" id="password-input" placeholder="Password">
+        <button type="submit">Login</button>
+      </form>
+      <p id="login-error" class="error hidden"></p>
+      <p class="hint">Accounts: admin/admin123 (admin) or user/user123 (user)</p>
+    </div>
+
+    <div id="app-section" class="hidden">
+      <div class="header">
+        <h1>Todo List</h1>
+        <div class="user-info">
+          <span id="user-display"></span>
+          <button id="logout-btn">Logout</button>
+        </div>
+      </div>
+      <form id="todo-form">
+        <input type="text" id="todo-input" placeholder="What needs to be done?" autocomplete="off">
+        <button type="submit">Add</button>
+      </form>
+      <ul id="todo-list"></ul>
+      <div id="empty-state" class="empty-state">No todos yet. Add one above!</div>
+    </div>
   </div>
   <script src="app.js"></script>
 </body>

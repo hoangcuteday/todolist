@@ -116,3 +116,89 @@ h1 {
 .empty-state.hidden {
   display: none;
 }
+
+.hidden {
+  display: none !important;
+}
+
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+#login-form input {
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#login-form input:focus {
+  border-color: #4a90d9;
+}
+
+#login-form button {
+  padding: 12px 24px;
+  background: #4a90d9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#login-form button:hover {
+  background: #357abd;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 14px;
+  text-align: center;
+}
+
+.hint {
+  color: #999;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 12px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin-bottom: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+#logout-btn {
+  padding: 6px 12px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#logout-btn:hover {
+  background: #c0392b;
+}

@@ -9,16 +9,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-This is a todo list application with an Express backend and vanilla JS frontend.
+Todo list application with Express backend and vanilla JS frontend. All state is in-memory (no database).
 
-- **server.js** — Express API server. All todo state is held in-memory (no database). Serves the frontend as static files from `public/`.
-- **public/** — Frontend SPA (plain HTML/CSS/JS, no build step). `app.js` communicates with the backend via fetch calls to `/api/todos`.
+- **server.js** — Express API server with token-based auth. Serves frontend as static files from `public/`.
+- **public/** — Frontend SPA (plain HTML/CSS/JS, no build step). `app.js` handles login flow and communicates with the backend via fetch.
+
+## Authentication
+
+Bearer token auth using `crypto.randomUUID()`. Tokens stored in a server-side `Map` and in `localStorage` on the client.
+
+Two roles:
+- **admin** — full CRUD on todos (only role that can delete)
+- **user** — can create, read, update todos but not delete
+
+Middleware: `authenticate` validates token on all `/api/todos` routes. `requireRole('admin')` gates the DELETE endpoint.
 
 ## API Endpoints
 
-All endpoints under `/api/todos`. Request/response bodies are JSON.
+All request/response bodies are JSON. Auth endpoints are public; todo endpoints require `Authorization: Bearer <token>` header.
 
+- `POST /api/login` — authenticate (body: `{ username, password }`) → `{ token, user }`
+- `POST /api/logout` — invalidate token
+- `GET /api/me` — current user info
 - `GET /api/todos` — list all
 - `POST /api/todos` — create (body: `{ title }`)
 - `PATCH /api/todos/:id` — update (body: `{ title?, completed? }`)
-- `DELETE /api/todos/:id` — delete
+- `DELETE /api/todos/:id` — delete (admin only)
