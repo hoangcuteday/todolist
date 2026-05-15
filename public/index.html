@@ -29,6 +29,24 @@
       </div>
     </header>
 
+    <section id="admin-panel" class="admin-panel hidden">
+      <div class="admin-header">
+        <h2>User Management</h2>
+        <span id="user-count" class="count">0</span>
+      </div>
+      <form id="user-form" class="user-form">
+        <input type="text" id="new-username-input" placeholder="Username" autocomplete="off">
+        <input type="password" id="new-password-input" placeholder="Password">
+        <select id="new-role-input">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Add user</button>
+      </form>
+      <p id="user-error" class="error hidden"></p>
+      <div id="user-list" class="user-list"></div>
+    </section>
+
     <div class="board">
       <div class="column" data-status="todo">
         <div class="column-header">

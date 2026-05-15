@@ -13,6 +13,7 @@ const users = [
   { id: 1, username: 'admin', password: process.env.ADMIN_PASSWORD || 'admin123', role: 'admin' },
   { id: 2, username: 'user', password: process.env.USER_PASSWORD || 'user123', role: 'user' },
 ];
+let nextUserId = users.length + 1;
 
 const sessions = new Map();
 
@@ -42,6 +43,10 @@ function requireRole(role) {
   };
 }
 
+function publicUser(user) {
+  return { id: user.id, username: user.username, role: user.role };
+}
+
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   const user = users.find(u => u.username === username && u.password === password);
@@ -61,6 +66,33 @@ app.post('/api/logout', authenticate, (req, res) => {
 
 app.get('/api/me', authenticate, (req, res) => {
   res.json(req.user);
+});
+
+app.get('/api/users', authenticate, requireRole('admin'), (req, res) => {
+  res.json(users.map(publicUser));
+});
+
+app.post('/api/users', authenticate, requireRole('admin'), (req, res) => {
+  const username = String(req.body.username || '').trim();
+  const password = String(req.body.password || '');
+  const role = String(req.body.role || 'user').trim();
+
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
+  }
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+  if (!['admin', 'user'].includes(role)) {
+    return res.status(400).json({ error: 'Role must be admin or user' });
+  }
+  if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+    return res.status(409).json({ error: 'Username already exists' });
+  }
+
+  const user = { id: nextUserId++, username, password, role };
+  users.push(user);
+  res.status(201).json(publicUser(user));
 });
 
 app.get('/api/todos', authenticate, (req, res) => {

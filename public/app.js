@@ -6,6 +6,14 @@ const usernameInput = document.getElementById('username-input');
 const passwordInput = document.getElementById('password-input');
 const userDisplay = document.getElementById('user-display');
 const logoutBtn = document.getElementById('logout-btn');
+const adminPanel = document.getElementById('admin-panel');
+const userForm = document.getElementById('user-form');
+const newUsernameInput = document.getElementById('new-username-input');
+const newPasswordInput = document.getElementById('new-password-input');
+const newRoleInput = document.getElementById('new-role-input');
+const userError = document.getElementById('user-error');
+const userList = document.getElementById('user-list');
+const userCount = document.getElementById('user-count');
 
 let token = localStorage.getItem('token');
 let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -18,12 +26,19 @@ function showApp() {
   loginSection.classList.add('hidden');
   appSection.classList.remove('hidden');
   userDisplay.textContent = `${currentUser.username} (${currentUser.role})`;
+  if (currentUser.role === 'admin') {
+    adminPanel.classList.remove('hidden');
+    fetchUsers();
+  } else {
+    adminPanel.classList.add('hidden');
+  }
   fetchTodos();
 }
 
 function showLogin() {
   appSection.classList.add('hidden');
   loginSection.classList.remove('hidden');
+  adminPanel.classList.add('hidden');
   loginError.classList.add('hidden');
 }
 
@@ -64,6 +79,35 @@ async function fetchTodos() {
   }
   const todos = await res.json();
   renderBoard(todos);
+}
+
+async function fetchUsers() {
+  const res = await fetch('/api/users', { headers: authHeaders() });
+  if (res.status === 401) {
+    logout();
+    return;
+  }
+  if (res.status === 403) {
+    adminPanel.classList.add('hidden');
+    return;
+  }
+  const users = await res.json();
+  renderUsers(users);
+}
+
+function renderUsers(users) {
+  userCount.textContent = users.length;
+  userList.innerHTML = '';
+
+  users.forEach(user => {
+    const item = document.createElement('div');
+    item.className = 'user-item';
+    item.innerHTML = `
+      <span class="user-name">${escapeHtml(user.username)}</span>
+      <span class="role-badge">${escapeHtml(user.role)}</span>
+    `;
+    userList.appendChild(item);
+  });
 }
 
 function renderBoard(todos) {
@@ -163,6 +207,27 @@ async function deleteTodo(id) {
   fetchTodos();
 }
 
+async function addUser(username, password, role) {
+  userError.classList.add('hidden');
+  const res = await fetch('/api/users', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ username, password, role })
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    userError.textContent = data.error || 'Could not add user';
+    userError.classList.remove('hidden');
+    return;
+  }
+
+  newUsernameInput.value = '';
+  newPasswordInput.value = '';
+  newRoleInput.value = 'user';
+  fetchUsers();
+}
+
 document.querySelectorAll('.add-card-form').forEach(form => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -180,6 +245,11 @@ loginForm.addEventListener('submit', (e) => {
 });
 
 logoutBtn.addEventListener('click', logout);
+
+userForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  addUser(newUsernameInput.value.trim(), newPasswordInput.value, newRoleInput.value);
+});
 
 async function init() {
   if (token && currentUser) {
