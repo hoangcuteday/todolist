@@ -6,10 +6,6 @@ const usernameInput = document.getElementById('username-input');
 const passwordInput = document.getElementById('password-input');
 const userDisplay = document.getElementById('user-display');
 const logoutBtn = document.getElementById('logout-btn');
-const form = document.getElementById('todo-form');
-const input = document.getElementById('todo-input');
-const list = document.getElementById('todo-list');
-const emptyState = document.getElementById('empty-state');
 
 let token = localStorage.getItem('token');
 let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -67,32 +63,41 @@ async function fetchTodos() {
     return;
   }
   const todos = await res.json();
-  renderTodos(todos);
+  renderBoard(todos);
 }
 
-function renderTodos(todos) {
-  list.innerHTML = '';
-  emptyState.classList.toggle('hidden', todos.length > 0);
+function renderBoard(todos) {
+  const statuses = ['todo', 'doing', 'done'];
+  statuses.forEach(status => {
+    const list = document.querySelector(`.card-list[data-status="${status}"]`);
+    const count = document.querySelector(`[data-count="${status}"]`);
+    const cards = todos.filter(t => t.status === status);
+    count.textContent = cards.length;
+    list.innerHTML = '';
 
-  todos.forEach(todo => {
-    const li = document.createElement('li');
-    li.className = `todo-item${todo.completed ? ' completed' : ''}`;
+    cards.forEach(todo => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.draggable = true;
+      card.dataset.id = todo.id;
 
-    const deleteBtn = currentUser.role === 'admin'
-      ? `<button class="delete-btn">&times;</button>`
-      : '';
+      const deleteBtn = currentUser.role === 'admin'
+        ? `<button class="delete-btn" title="Delete">&times;</button>`
+        : '';
 
-    li.innerHTML = `
-      <input type="checkbox" ${todo.completed ? 'checked' : ''}>
-      <span>${escapeHtml(todo.title)}</span>
-      ${deleteBtn}
-    `;
+      card.innerHTML = `
+        <span class="card-title">${escapeHtml(todo.title)}</span>
+        <div class="card-actions">${deleteBtn}</div>
+      `;
 
-    li.querySelector('input[type="checkbox"]').addEventListener('change', () => toggleTodo(todo.id, !todo.completed));
-    const del = li.querySelector('.delete-btn');
-    if (del) del.addEventListener('click', () => deleteTodo(todo.id));
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragend', handleDragEnd);
 
-    list.appendChild(li);
+      const del = card.querySelector('.delete-btn');
+      if (del) del.addEventListener('click', () => deleteTodo(todo.id));
+
+      list.appendChild(card);
+    });
   });
 }
 
@@ -102,20 +107,53 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-async function addTodo(title) {
+let draggedId = null;
+
+function handleDragStart(e) {
+  draggedId = e.target.dataset.id;
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+  e.target.classList.remove('dragging');
+  draggedId = null;
+}
+
+document.querySelectorAll('.card-list').forEach(list => {
+  list.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    list.classList.add('drag-over');
+  });
+
+  list.addEventListener('dragleave', () => {
+    list.classList.remove('drag-over');
+  });
+
+  list.addEventListener('drop', (e) => {
+    e.preventDefault();
+    list.classList.remove('drag-over');
+    if (draggedId) {
+      moveTodo(parseInt(draggedId), list.dataset.status);
+    }
+  });
+});
+
+async function addTodo(title, status) {
   await fetch('/api/todos', {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ title })
+    body: JSON.stringify({ title, status })
   });
   fetchTodos();
 }
 
-async function toggleTodo(id, completed) {
+async function moveTodo(id, status) {
   await fetch(`/api/todos/${id}`, {
     method: 'PATCH',
     headers: authHeaders(),
-    body: JSON.stringify({ completed })
+    body: JSON.stringify({ status })
   });
   fetchTodos();
 }
@@ -125,20 +163,23 @@ async function deleteTodo(id) {
   fetchTodos();
 }
 
+document.querySelectorAll('.add-card-form').forEach(form => {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = form.querySelector('input');
+    const title = input.value.trim();
+    if (!title) return;
+    addTodo(title, form.dataset.status);
+    input.value = '';
+  });
+});
+
 loginForm.addEventListener('submit', (e) => {
   e.preventDefault();
   login(usernameInput.value.trim(), passwordInput.value);
 });
 
 logoutBtn.addEventListener('click', logout);
-
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const title = input.value.trim();
-  if (!title) return;
-  addTodo(title);
-  input.value = '';
-});
 
 async function init() {
   if (token && currentUser) {

@@ -67,12 +67,15 @@ app.get('/api/todos', authenticate, (req, res) => {
   res.json(todos);
 });
 
+const VALID_STATUSES = ['todo', 'doing', 'done'];
+
 app.post('/api/todos', authenticate, (req, res) => {
-  const { title } = req.body;
+  const { title, status } = req.body;
   if (!title || !title.trim()) {
     return res.status(400).json({ error: 'Title is required' });
   }
-  const todo = { id: nextId++, title: title.trim(), completed: false };
+  const todoStatus = VALID_STATUSES.includes(status) ? status : 'todo';
+  const todo = { id: nextId++, title: title.trim(), status: todoStatus };
   todos.push(todo);
   res.status(201).json(todo);
 });
@@ -83,7 +86,9 @@ app.patch('/api/todos/:id', authenticate, (req, res) => {
   if (!todo) return res.status(404).json({ error: 'Todo not found' });
 
   if (req.body.title !== undefined) todo.title = req.body.title.trim();
-  if (req.body.completed !== undefined) todo.completed = req.body.completed;
+  if (req.body.status !== undefined && VALID_STATUSES.includes(req.body.status)) {
+    todo.status = req.body.status;
+  }
   res.json(todo);
 });
 

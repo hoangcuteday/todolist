@@ -3,38 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Todo List</title>
+  <title>Kanban Board</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <div id="login-section">
-      <h1>Login</h1>
+  <div id="login-section">
+    <div class="login-card">
+      <h1>Kanban Board</h1>
       <form id="login-form">
         <input type="text" id="username-input" placeholder="Username" autocomplete="off">
         <input type="password" id="password-input" placeholder="Password">
         <button type="submit">Login</button>
       </form>
       <p id="login-error" class="error hidden"></p>
-      <p class="hint">Accounts: admin/admin123 (admin) or user/user123 (user)</p>
-    </div>
-
-    <div id="app-section" class="hidden">
-      <div class="header">
-        <h1>Todo List</h1>
-        <div class="user-info">
-          <span id="user-display"></span>
-          <button id="logout-btn">Logout</button>
-        </div>
-      </div>
-      <form id="todo-form">
-        <input type="text" id="todo-input" placeholder="What needs to be done?" autocomplete="off">
-        <button type="submit">Add</button>
-      </form>
-      <ul id="todo-list"></ul>
-      <div id="empty-state" class="empty-state">No todos yet. Add one above!</div>
+      <p class="hint">Accounts: admin/admin123 or user/user123</p>
     </div>
   </div>
+
+  <div id="app-section" class="hidden">
+    <header class="top-bar">
+      <h1>Kanban Board</h1>
+      <div class="user-info">
+        <span id="user-display"></span>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </header>
+
+    <div class="board">
+      <div class="column" data-status="todo">
+        <div class="column-header">
+          <h2>To Do</h2>
+          <span class="count" data-count="todo">0</span>
+        </div>
+        <div class="card-list" data-status="todo"></div>
+        <form class="add-card-form" data-status="todo">
+          <input type="text" placeholder="Add a card..." autocomplete="off">
+          <button type="submit">+</button>
+        </form>
+      </div>
+
+      <div class="column" data-status="doing">
+        <div class="column-header">
+          <h2>Doing</h2>
+          <span class="count" data-count="doing">0</span>
+        </div>
+        <div class="card-list" data-status="doing"></div>
+        <form class="add-card-form" data-status="doing">
+          <input type="text" placeholder="Add a card..." autocomplete="off">
+          <button type="submit">+</button>
+        </form>
+      </div>
+
+      <div class="column" data-status="done">
+        <div class="column-header">
+          <h2>Done</h2>
+          <span class="count" data-count="done">0</span>
+        </div>
+        <div class="card-list" data-status="done"></div>
+        <form class="add-card-form" data-status="done">
+          <input type="text" placeholder="Add a card..." autocomplete="off">
+          <button type="submit">+</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
